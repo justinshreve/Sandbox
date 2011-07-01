@@ -2,24 +2,20 @@
 lib = File.expand_path('../lib/', __FILE__)
 $:.unshift lib unless $:.include?(lib)
 
-require 'localdev.rb'
+require 'sandbox.rb'
 
 Gem::Specification.new do |s|
-  s.name        = "localdev"
-  s.version     = Localdev::VERSION
+  s.name        = "sandbox"
+  s.version     = sandbox::VERSION
   s.platform    = Gem::Platform::RUBY
-  s.authors     = ["Mark Jaquith"]
-  s.email       = ["mark@jaquith.me"]
-  s.homepage    = "http://github.com/markjaquith/Localdev"
-  s.summary     = %q{Add locally hosted domains to your hosts file, and disable/enable their use}
-  s.description = %q{Localdev manages part of your hosts file and lets you specify domains to host locally. You can quickly enable or disable local hosting of those domains.}
+  s.authors     = ["Justin Shreve"]
+  s.email       = ["justin.shreve@gmail.com"]
+  s.homepage    = "http://github.com/justinshreve/Sandbox"
+  s.summary     = %q{Add entries to your hosts file, and disable/enable their use}
+  s.description = %q{Sandbox manages part of your hosts file and lets you specify domains sandbox to point locally or remotely to. You can quickly enable or disable sandboxing of those domains.}
   s.has_rdoc = false
 
-  # s.required_rubygems_version = ">= 1.3.6"
-  # s.rubyforge_project         = "localdev"
-
   s.files              = `git ls-files`.split("\n")
-  # s.test_files         = `git ls-files -- {test,spec,features}/*`.split("\n")
-  s.executables        = %w(localdev)
+  s.executables        = %w(sandbox)
   s.require_paths      = ["lib"]
 end
