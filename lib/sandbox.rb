@@ -26,7 +26,7 @@ require 'digest/md5'
 
 
 class Sandbox
-  VERSION = '0.1.1'
+  VERSION = '0.1.2'
   def initialize
     @debug = false
     @sandbox = '/etc/hosts-sandbox'
@@ -184,8 +184,8 @@ class Sandbox
       end
     }
     update_sandbox { | entries | entries << "#{domain} #{ip}" }
+    enable if :on == get_status
     puts "Added '#{domain} #{ip}'"
-    status
   end
 
   def remove domain
@@ -195,8 +195,8 @@ class Sandbox
       entries = entries.delete entry
       end
     }
+    enable if :on == get_status
     puts "Removed '#{domain}'"
-    status
   end
 
   def get_destination
