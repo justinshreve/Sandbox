@@ -184,7 +184,6 @@ class Sandbox
       end
     }
     update_sandbox { | entries | entries << "#{domain} #{ip}" }
-    enable if :on == get_status
     puts "Added '#{domain} #{ip}'"
     status
   end
@@ -196,7 +195,6 @@ class Sandbox
       entries = entries.delete entry
       end
     }
-    enable if :on == get_status
     puts "Removed '#{domain}'"
     status
   end
