@@ -26,7 +26,7 @@ require 'digest/md5'
 
 
 class Sandbox
-  VERSION = '0.1.2'
+  VERSION = '0.1.3'
   def initialize
     @debug = false
     @sandbox = '/etc/hosts-sandbox'
@@ -35,7 +35,7 @@ class Sandbox
     @default_destination = '127.0.0.1'
     @start = '#==SANDBOX==#'
     @end = '#/==SANDBOX==#'
-    if !ARGV.first.nil? && [:on, :off, :add, :remove, :destination].include?( ARGV.first.to_sym )
+    if !ARGV.first.nil? && [:on, :off, :add, :remove, :destination, :clear].include?( ARGV.first.to_sym )
       require_sudo
       ensure_sandbox_exists
     end
@@ -46,7 +46,7 @@ class Sandbox
     case command
     when :"--v", :"--version"
       info
-    when :on, :off, :status
+    when :on, :off, :status, :clear
       send command
     when :add
       require_sudo
@@ -67,7 +67,7 @@ class Sandbox
       ensure_sandbox_exists
       send command, object
     when nil, '--help', '-h'
-      exit_message "Usage: sandbox [on|off|status]\n       sandbox [destination] newdefault\n       sandbox [add|remove] domain destination"
+      exit_message "Usage: sandbox [on|off|status|clear]\n       sandbox [destination] newdefault\n       sandbox [add|remove] domain destination"
     else
     exit_error_message "Invalid command"
     end
@@ -221,6 +221,14 @@ class Sandbox
       end
     end
     return status
+  end
+
+  def clear
+    File.open( @sandbox, 'w' ) do |file|
+      file.truncate(0)
+    end
+    enable
+    puts "All sandbox entries have been removed"
   end
 
   def status

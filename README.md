@@ -8,11 +8,12 @@ Available commands:
 * `sandbox add {domain} {ip}` — adds the specified domain pointing to the specified IP
 * `sandbox destination {ip}` - sets the default sandbox IP
 * `sandbox remove {domain}` — removes the specified domain
+* `sandbox clear` - removes all current entries
 * `sandbox on` — enables all saved entries
 * `sandbox off` — disables all saved entries
 * `sandbox status` — shows the current status of the tool (on/off status and current default destination IP)
 
-Note: if sandbox development is on, `add` and `remove` commands will immediately update the hosts file and trigger a DNS flush.
+Note: if sandbox development is on, `add`, `remove`, and `clear` commands will immediately update the hosts file and trigger a DNS flush.
 
 ## Installation
 
