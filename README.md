@@ -19,7 +19,7 @@ Note: if sandbox development is on, `add` and `remove` commands will immediately
 To install Sandbox, use RubyGems:
 
 ```bash
-sudo gem install sandbox
+gem install sandboxer
 ```
 
 ## Notes
