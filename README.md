@@ -1,29 +1,36 @@
-# Localdev
+# Sandbox
 
-Localdev is a Ruby command line script to register domains that you sometimes use for local development, and to quickly enable or disable local development for those domains. Only expected to work on OS X. Requires sudo access, as it is manipulating your hosts file.
+Sandbox is a Ruby command line script to register domains that you sometimes use for remote or local development, and to quickly enable or disable development/host file entries for those domains. Only expected to work on OS X. Requires sudo access, as it is manipulating your hosts file.
 
 Available commands:
 
-* `localdev add {domain}` — adds the specified domain
-* `localdev remove {domain}` — removes the specified domain
-* `localdev on` — enables local development
-* `localdev off` — disables local development
-* `localdev status` — shows the current status
+* `sandbox add {domain}` — adds the specified domain using the default sandbox IP (system default is 127.0.0.1)
+* `sandbox add {domain} {ip}` — adds the specified domain pointing to the specified IP
+* `sandbox destination {ip}` - sets the default sandbox IP
+* `sandbox remove {domain}` — removes the specified domain
+* `sandbox on` — enables all saved entries
+* `sandbox off` — disables all saved entries
+* `sandbox status` — shows the current status of the tool (on/off status and current default destination IP)
 
-Note: if local development is on, `add` and `remove` commands will immediately update the hosts file and trigger a DNS flush.
+Note: if sandbox development is on, `add` and `remove` commands will immediately update the hosts file and trigger a DNS flush.
 
 ## Installation
 
-To install Localdev, use RubyGems:
+To install Sandbox, use RubyGems:
 
 ```bash
-sudo gem install localdev
+sudo gem install sandbox
 ```
 
 ## Notes
 
-Your list of local development domains is kept in `/etc/hosts-localdev`.
+Your list of development domains is kept in `/etc/hosts-sandbox`.
+Your default destination IP is kept in `/etc/hosts-sandbox-destination`.
 
 ## License & Copyright
 
-Localdev is Copyright Mark Jaquith 2011, and is offered under the terms of the GNU General Public License, version 2, or any later version.
+Sandbox is Copyright Justin Shreve 2011
+Based on Localdev Copyright Mark Jaquith 2011
+see https://github.com/markjaquith/Localdev
+
+Offered under the terms of the GNU General Public License, version 2, or any later version.
