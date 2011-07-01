@@ -1,12 +1,12 @@
 # -*- encoding: utf-8 -*-
-lib = File.expand_path('../lib/', __FILE__)
+lib = File.expand_path('./lib/', __FILE__)
 $:.unshift lib unless $:.include?(lib)
 
-require 'sandbox.rb'
+require './lib/sandbox.rb'
 
 Gem::Specification.new do |s|
-  s.name        = "sandbox"
-  s.version     = sandbox::VERSION
+  s.name        = "sandboxer"
+  s.version     = Sandbox::VERSION
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["Justin Shreve"]
   s.email       = ["justin.shreve@gmail.com"]
