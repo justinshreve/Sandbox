@@ -1,7 +1,11 @@
 #
-# Localdev - Hosts file tool for local development
+# Sandbox - Hosts file tool for remote & local development
 #
-# Copyright 2011 by Mark Jaquith
+# Copyright Justin Shreve 2011
+#
+# Based on https://github.com/markjaquith/Localdev Copyright Mark Jaquith 2011
+# Adds additional options for pointing hosts entries to other IP address
+# and setting a default IP address to sandbox to
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,34 +23,50 @@
 
 require 'digest/md5'
 
-class Localdev
+class Sandbox
 	VERSION = '0.3.0'
 
 	def initialize
 		@debug = false
-		@localdev = '/etc/hosts-localdev'
+		@sandbox = '/etc/hosts-sandbox'
+		@destination_storage = '/etc/hosts-sandbox-destination'
 		@hosts = '/etc/hosts'
-		@start = '#==LOCALDEV==#'
-		@end = '#/==LOCALDEV==#'
-		if !ARGV.first.nil? && [:on, :off, :add, :remove].include?( ARGV.first.to_sym )
+		@default_destination = '127.0.0.1'
+		@start = '#==SANDBOX==#'
+		@end = '#/==SANDBOX==#'
+		if !ARGV.first.nil? && [:on, :off, :add, :remove, :destination].include?( ARGV.first.to_sym )
 			require_sudo
-			ensure_localdev_exists
+			ensure_sandbox_exists
 		end
 		command = ARGV.shift
 		command = command.to_sym unless command.nil?
 		object = ARGV.shift
+		ip = ARGV.shift
 		case command
 			when :"--v", :"--version"
 				info
 			when :on, :off, :status
 				send command
-			when :add, :remove
+			when :add
 				require_sudo
-				object.nil? && exit_error_message("'localdev #{command}' requires you to provide a domain")
-				ensure_localdev_exists
-				send command, object
+				object.nil? && exit_error_message("'sandbox add' requires you to provide a domain. optionally you can provide an IP/destination.")
+				ensure_sandbox_exists
+				if ip.nil?
+				  ip = get_destination
+				end
+				send command, object, ip
+			when :remove
+			  require_sudo
+			  object.nil? && exit_error_message("'sandbox remove' requires you to provide a domain.")
+        ensure_sandbox_exists
+        send command, object
+			when :destination
+			  require_sudo
+        object.nil? && exit_error_message("'sandbox setdefault' requires you to provide an IP/destination.")
+        ensure_sandbox_exists
+        send command, object
 			when nil, '--help', '-h'
-				exit_message "Usage: localdev [on|off|status]\n       localdev [add|remove] domain"
+				exit_message "Usage: sandbox [on|off|status]\n       sandbox [destination] newdefault\n       sandbox [add|remove] domain destination"
 			else
 				exit_error_message "Invalid command"
 		end
@@ -59,7 +79,7 @@ class Localdev
 	end
 
 	def info
-		puts "Localdev #{self.class::VERSION}"
+		puts "Sandbox #{self.class::VERSION}"
 	end
 
 	def debug message
@@ -79,23 +99,27 @@ class Localdev
 		%x{dscacheutil -flushcache}
 	end
 
-	def ensure_localdev_exists
-		File.open( @localdev, 'w' ) {|file| file.write('') } unless File.exists?( @localdev )
+	def ensure_sandbox_exists
+		File.open( @sandbox, 'w' ) {|file| file.write('') } unless File.exists?( @sandbox )
+		File.open( @destination_storage, 'w' ) {|file| file.write('') } unless File.exists?( @destination_storage )
 	end
 
 	def enable
 		disable
-		domains = []
-		File.open( @localdev, 'r' ) do |file|
-			domains = file.read.split("\n").uniq
+		entries = []
+		File.open( @sandbox, 'r' ) do |file|
+			entries = file.read.split("\n").uniq
 		end
 		File.open( @hosts, 'a' ) do |file|
 			file.puts "\n"
 			file.puts @start
 			file.puts "# The md5 dummy entries are here so that things like MAMP Pro don't"
 			file.puts "# discourtiously remove our entries"
-			domains.each do |domain|
-				file.puts "127.0.0.1 #{Digest::MD5.hexdigest(domain)}.#{domain} #{domain}"
+			entries.each do |entry|
+			  pieces = entry.split( ' ' )
+			  domain = pieces[0]
+			  ip = pieces[1]
+				file.puts "#{ip} #{Digest::MD5.hexdigest(domain)}.#{domain} #{domain}"
 			end
 			file.puts @end
 		end
@@ -104,7 +128,7 @@ class Localdev
 	def on
 		enable
 		flush_dns
-		puts "Turning Localdev on"
+		puts "Turning sandbox on"
 	end
 
 	def disable
@@ -128,34 +152,61 @@ class Localdev
 	def off
 		disable
 		flush_dns
-		puts "Turning Localdev off"
+		puts "Turning Sandbox off"
 	end
 
-	def update_localdev
-		domains = []
-		File.open( @localdev, 'r' ) do |file|
-			domains = file.read.split("\n")
-			debug domains.inspect
-			yield domains
-			debug domains.inspect
+	def update_sandbox
+		entries = []
+		File.open( @sandbox, 'r' ) do |file|
+			entries = file.read.split( "\n" )
+			debug entries.inspect
+			yield entries
+			debug entries.inspect
 		end
-		File.open( @localdev, 'w' ) do |file|
-			file.puts domains
+		File.open( @sandbox, 'w' ) do |file|
+			file.puts entries
 		end
 	end
 
-	def add domain
-		update_localdev {|domains| domains << domain unless domains.include? domain }
+  def destination ip
+    File.open( @destination_storage, 'w' ) do |file|
+      file.puts ip
+    end  
+    puts "Sandbox default destination set to #{ip}"      
+  end
+  
+	def add (domain, ip)
+    entry = ''
+    update_sandbox { |entries|
+      if entries.find { |entry| /^#{domain}/ =~ entry }
+        entries = entries.delete entry 
+      end
+		}
+		update_sandbox { | entries | entries << "#{domain} #{ip}" }
 		enable if :on == get_status
-		puts "Added '#{domain}'"
+		puts "Added '#{domain} #{ip}'"
 		status
 	end
 
 	def remove domain
-		update_localdev {|domains| domains = domains.delete domain }
+	  entry = ''
+		update_sandbox { |entries|
+      if entries.find { |entry| /^#{domain}/ =~ entry }
+        entries = entries.delete entry 
+      end
+		}
 		enable if :on == get_status
 		puts "Removed '#{domain}'"
 		status
+	end
+
+	def get_destination
+	  current_destination = @default_destination
+	  File.open( @destination_storage, 'r' ) do |file|
+	    dest = file.read.strip
+      current_destination = dest unless dest.empty? or dest.nil?
+    end
+    return current_destination
 	end
 
 	def get_status
@@ -174,7 +225,8 @@ class Localdev
 	end
 
 	def status
-		puts "Localdev is #{get_status}"
+		puts "Sandbox is #{get_status}"
+		puts "Current default sandbox destination is #{get_destination}"
 	end
 
 end
