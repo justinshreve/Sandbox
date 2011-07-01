@@ -26,7 +26,7 @@ require 'digest/md5'
 
 
 class Sandbox
-  VERSION = '0.3.0'
+  VERSION = '0.1.0'
   def initialize
     @debug = false
     @sandbox = '/etc/hosts-sandbox'
