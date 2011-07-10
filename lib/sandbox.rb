@@ -26,7 +26,7 @@ require 'digest/md5'
 
 
 class Sandbox
-  VERSION = '0.1.3'
+  VERSION = '0.1.4'
   def initialize
     @debug = false
     @sandbox = '/etc/hosts-sandbox'
@@ -35,7 +35,7 @@ class Sandbox
     @default_destination = '127.0.0.1'
     @start = '#==SANDBOX==#'
     @end = '#/==SANDBOX==#'
-    if !ARGV.first.nil? && [:on, :off, :add, :remove, :destination, :clear].include?( ARGV.first.to_sym )
+    if !ARGV.first.nil? && [:on, :off, :add, :remove, :destination, :clear, :list, :view].include?( ARGV.first.to_sym )
       require_sudo
       ensure_sandbox_exists
     end
@@ -46,8 +46,10 @@ class Sandbox
     case command
     when :"--v", :"--version"
       info
-    when :on, :off, :status, :clear
+    when :on, :off, :status, :clear, :list
       send command
+    when :view
+      send command, object
     when :add
       require_sudo
       object.nil? && exit_error_message("'sandbox add' requires you to provide a domain. optionally you can provide an IP/destination.")
@@ -209,7 +211,6 @@ class Sandbox
   end
 
   def get_status
-    # do magic
     status = :off
     return status unless File.readable? @hosts
     File.open( @hosts, 'r' ) do |file|
@@ -221,6 +222,23 @@ class Sandbox
       end
     end
     return status
+  end
+
+  def list
+    File.open( @sandbox, 'r' ) do |file|
+      puts file.read
+    end
+  end
+
+  def view domain
+    entry = nil
+    File.open( @sandbox, 'r' ) do |entries|
+      if entries.read.find { |entry| /^#{domain}/ =~ entry }
+        puts "#{entry}"
+      else
+        puts "There is no entry matching '#{domain}'"
+      end
+    end
   end
 
   def clear
