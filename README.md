@@ -1,4 +1,6 @@
-# Sandbox
+# Sandbox (Deprecated)
+
+This project is no longer maintained - please see the original project (https://github.com/markjaquith/Localdev) which now supports adding entries for other IP addresses.
 
 Sandbox is a Ruby command line script to register domains that you sometimes use for remote or local development, and to quickly enable or disable development/host file entries for those domains. Only expected to work on OS X. Requires sudo access, as it is manipulating your hosts file.
 
@@ -32,7 +34,7 @@ Your default destination IP is kept in `/etc/hosts-sandbox-destination`.
 
 ## License & Copyright
 
-Sandbox is Copyright Justin Shreve 2011
+Sandbox is Copyright Justin Shreve 2011-2015
 Based on Localdev Copyright Mark Jaquith 2011
 see https://github.com/markjaquith/Localdev
 
